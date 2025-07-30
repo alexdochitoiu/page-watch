@@ -1,10 +1,10 @@
 import { MainContainer } from "@/components/layout/MainContainer";
-import { HomeScreen } from "@/screens/home/HomeScreen";
+import { AuthScreen } from "@/screens/auth/AuthScreen";
 
-export default function HomePage() {
+export default function LoginPage() {
   return (
     <MainContainer>
-      <HomeScreen />
+      <AuthScreen />
     </MainContainer>
   );
 }

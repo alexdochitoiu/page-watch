@@ -7,7 +7,7 @@ import {
   checkFrequencyOptions,
   Frequency,
   WatcherFormData,
-} from "@/components/AddWatcherForm/AddWatcherForm.types";
+} from "@/components/shared/add-watcher-form/AddWatcherForm.types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,7 +28,7 @@ export const AddWatcherForm: React.FC = () => {
     formState: { errors, isSubmitting },
   } = useForm<WatcherFormData>({
     resolver: zodResolver(AddWatcherFormSchema),
-    mode: "all",
+    mode: "onBlur",
   });
 
   const onSubmit = (data: WatcherFormData) => {
@@ -39,13 +39,13 @@ export const AddWatcherForm: React.FC = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Watcher Name</Label>
-        <Input id="name" {...register("name")} placeholder="My Website" />
+        <Label htmlFor="name">Watcher name</Label>
+        <Input id="name" {...register("name")} placeholder="My watcher" />
         {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="url">URL to Monitor</Label>
+        <Label htmlFor="url">URL to monitor</Label>
         <Input id="url" {...register("url")} placeholder="https://example.com" />
         {errors.url && <p className="text-sm text-red-500">{errors.url.message}</p>}
       </div>
@@ -62,7 +62,7 @@ export const AddWatcherForm: React.FC = () => {
         defaultValue={Frequency.HOURLY}
         render={({ field }) => (
           <div className="space-y-2">
-            <Label htmlFor="frequency">Check Frequency</Label>
+            <Label htmlFor="frequency">Check frequency</Label>
             <Select value={field.value} onValueChange={field.onChange}>
               <SelectTrigger id="frequency" className="w-full">
                 <SelectValue placeholder="Select frequency" />
@@ -81,7 +81,7 @@ export const AddWatcherForm: React.FC = () => {
       />
 
       <div className="space-y-2">
-        <Label htmlFor="selector">CSS Selector (Optional)</Label>
+        <Label htmlFor="selector">CSS selector (optional)</Label>
         <Textarea
           id="selector"
           placeholder="e.g., .price, #content, h1"
@@ -92,7 +92,7 @@ export const AddWatcherForm: React.FC = () => {
       </div>
 
       <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Adding..." : "Add Watcher"}
+        {isSubmitting ? "Adding..." : "Add watcher"}
       </Button>
     </form>
   );
