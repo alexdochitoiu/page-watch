@@ -6,8 +6,11 @@ import { LoginFormSchema, LoginFormData } from "@/components/shared/login-form/L
 import { Button } from "@/components/ui/button";
 import { Input, PasswordInput } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuthStore } from "@/stores/auth";
 
 export const LoginForm: React.FC = () => {
+  const { signIn, isLoading } = useAuthStore();
+
   const {
     register,
     handleSubmit,
@@ -17,10 +20,14 @@ export const LoginForm: React.FC = () => {
     mode: "onBlur",
   });
 
-  const onSubmit = (data: LoginFormData) => {
-    console.log("Login data", data);
-    // submit to API here
+  const onSubmit = async (data: LoginFormData) => {
+    const { error } = await signIn(data.email, data.password);
+    if (error) {
+      console.error("Login failed:", error.message);
+    }
   };
+
+  const loading = isLoading || isSubmitting;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
@@ -36,8 +43,8 @@ export const LoginForm: React.FC = () => {
         {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
       </div>
 
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Logging in..." : "Login"}
+      <Button type="submit" disabled={loading}>
+        {loading ? "Logging in..." : "Login"}
       </Button>
     </form>
   );

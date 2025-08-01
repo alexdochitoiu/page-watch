@@ -9,8 +9,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input, PasswordInput } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuthStore } from "@/stores/auth";
 
 export const RegisterForm: React.FC = () => {
+  const { signUp, isLoading } = useAuthStore();
+
   const {
     register,
     handleSubmit,
@@ -20,10 +23,14 @@ export const RegisterForm: React.FC = () => {
     mode: "onBlur",
   });
 
-  const onSubmit = (data: RegisterFormData) => {
-    console.log("Register data", data);
-    // submit to API here
+  const onSubmit = async (data: RegisterFormData) => {
+    const { error } = await signUp(data.email, data.password);
+    if (error) {
+      console.error("Registration failed:", error.message);
+    }
   };
+
+  const loading = isLoading || isSubmitting;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -51,8 +58,8 @@ export const RegisterForm: React.FC = () => {
         )}
       </div>
 
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Loading..." : "Register"}
+      <Button type="submit" disabled={loading}>
+        {loading ? "Loading..." : "Register"}
       </Button>
     </form>
   );
