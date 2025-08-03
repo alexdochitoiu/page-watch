@@ -1,4 +1,4 @@
-import { User, Session } from "@supabase/supabase-js";
+import { User, Session, AuthError } from "@supabase/supabase-js";
 import { create } from "zustand";
 import { supabase } from "@/lib/supabase/client";
 
@@ -8,14 +8,14 @@ interface AuthState {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
+  signUp: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
-  signInWithOAuth: (provider: SocialProvider) => Promise<{ error: any }>;
+  signInWithOAuth: (provider: SocialProvider) => Promise<{ error: AuthError | null }>;
   initialize: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>(set => ({
   user: null,
   session: null,
   isLoading: false,
