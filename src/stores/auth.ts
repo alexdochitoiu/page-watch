@@ -1,6 +1,6 @@
 import { User, Session } from "@supabase/supabase-js";
 import { create } from "zustand";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 type SocialProvider = "google" | "facebook" | "apple" | "discord";
 

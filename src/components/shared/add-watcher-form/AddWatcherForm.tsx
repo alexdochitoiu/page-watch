@@ -19,8 +19,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/lib/supabase/client";
+import { useAuthStore } from "@/stores/auth";
 
 export const AddWatcherForm: React.FC = () => {
+  const { user } = useAuthStore();
   const {
     register,
     handleSubmit,
@@ -31,9 +34,31 @@ export const AddWatcherForm: React.FC = () => {
     mode: "onBlur",
   });
 
-  const onSubmit = (data: WatcherFormData) => {
+  const onSubmit = async (data: WatcherFormData) => {
     console.log("Watcher data", data);
-    // submit to API here
+    try {
+      if (!user) {
+        console.error("User not authenticated");
+        return;
+      }
+
+      const { error } = await supabase.from("watchers").insert({
+        user_id: user.id,
+        name: data.name,
+        url: data.url,
+        email: data.email,
+        frequency: data.frequency.toLowerCase(),
+        selector: data.selector || null,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      console.log("Watcher added successfully");
+    } catch (error) {
+      console.error("Unexpected error adding watcher:", error);
+    }
   };
 
   return (

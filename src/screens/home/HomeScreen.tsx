@@ -1,8 +1,9 @@
 import { Plus } from "lucide-react";
 import { AddWatcherForm } from "@/components/shared/add-watcher-form/AddWatcherForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { WatcherList } from "@/screens/home/components/WatcherList";
 
-export const HomeScreen: React.FC = () => {
+export const HomeScreen: React.FC = async () => {
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <div className="lg:col-span-1">
@@ -22,7 +23,9 @@ export const HomeScreen: React.FC = () => {
         </Card>
       </div>
 
-      {/* TODO: Placeholder for future components like WatcherList, Stats, etc. */}
+      <div className="lg:col-span-2">
+        <WatcherList />
+      </div>
     </div>
   );
 };
