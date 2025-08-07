@@ -35,45 +35,36 @@ export type Database = {
     Tables: {
       watchers: {
         Row: {
-          active: boolean;
           created_at: string;
-          email: string;
           frequency: string;
           id: string;
           last_checked_at: string | null;
-          last_content: string | null;
           name: string;
-          selector: string | null;
+          rules: Json | null;
           status: Database["public"]["Enums"]["watcher_status"];
           updated_at: string;
           url: string;
           user_id: string;
         };
         Insert: {
-          active?: boolean;
           created_at?: string;
-          email: string;
           frequency?: string;
           id?: string;
           last_checked_at?: string | null;
-          last_content?: string | null;
           name: string;
-          selector?: string | null;
+          rules?: Json | null;
           status?: Database["public"]["Enums"]["watcher_status"];
           updated_at?: string;
           url: string;
           user_id: string;
         };
         Update: {
-          active?: boolean;
           created_at?: string;
-          email?: string;
           frequency?: string;
           id?: string;
           last_checked_at?: string | null;
-          last_content?: string | null;
           name?: string;
-          selector?: string | null;
+          rules?: Json | null;
           status?: Database["public"]["Enums"]["watcher_status"];
           updated_at?: string;
           url?: string;

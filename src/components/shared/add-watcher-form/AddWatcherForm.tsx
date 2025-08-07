@@ -46,9 +46,8 @@ export const AddWatcherForm: React.FC = () => {
         user_id: user.id,
         name: data.name,
         url: data.url,
-        email: data.email,
         frequency: data.frequency.toLowerCase(),
-        selector: data.selector || null,
+        selector: data.rules,
       });
 
       if (error) {
@@ -75,12 +74,6 @@ export const AddWatcherForm: React.FC = () => {
         {errors.url && <p className="text-sm text-red-500">{errors.url.message}</p>}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" {...register("email")} placeholder="your@email.com" />
-        {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
-      </div>
-
       <Controller
         name="frequency"
         control={control}
@@ -105,15 +98,15 @@ export const AddWatcherForm: React.FC = () => {
         )}
       />
 
+      {/* TODO: Create custom RulesBuilder component */}
       <div className="space-y-2">
-        <Label htmlFor="selector">CSS selector (optional)</Label>
+        <Label htmlFor="rules">Monitoring rules</Label>
         <Textarea
-          id="selector"
-          placeholder="e.g., .price, #content, h1"
-          {...register("selector")}
-          rows={3}
+          id="rules"
+          {...register("rules")}
+          placeholder='Example: [{"selector": ".price", "operation": "greater_than", "value": "100"}]'
         />
-        <p className="text-xs text-muted-foreground">Leave empty to monitor entire page content</p>
+        {errors.rules && <p className="text-sm text-red-500">{errors.rules.message}</p>}
       </div>
 
       <Button type="submit" disabled={isSubmitting}>

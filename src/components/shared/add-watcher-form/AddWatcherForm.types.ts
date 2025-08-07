@@ -13,12 +13,27 @@ export enum Frequency {
   WEEKLY = "10080",
 }
 
+export enum Operation {
+  EQUALS = "equals",
+  CONTAINS = "contains",
+  GREATER_THAN = "greater_than",
+  LESS_THAN = "less_than",
+  ELEMENT_EXISTS = "element_exists",
+  REGEX_MATCH = "regex_match",
+}
+
 export const AddWatcherFormSchema = z.object({
   name: z.string("Please enter a name for the watcher").nonempty("Name is required"),
   url: z.url("Please enter a valid URL"),
-  email: z.email("Please enter a valid email"),
   frequency: z.enum(Frequency),
-  selector: z.string().optional(),
+  rules: z.array(
+    z.object({
+      selector: z.string("Selector is required").nonempty(),
+      operation: z.enum(Operation),
+      value: z.string().optional(),
+      logicOperator: z.enum(["and", "or"]).optional(),
+    })
+  ),
 });
 
 export type WatcherFormData = z.infer<typeof AddWatcherFormSchema>;
