@@ -1,5 +1,5 @@
-import { checkFrequencyOptions } from "@/components/shared/add-watcher-form/AddWatcherForm.types";
 import { Watcher } from "@/types";
+import { checkFrequencyOptions } from "@/types/watcher";
 
 export const getFrequencyLabel = (frequency: Watcher["frequency"]): string => {
   return checkFrequencyOptions.find(option => option.value === frequency)?.label || frequency;

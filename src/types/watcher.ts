@@ -22,18 +22,22 @@ export enum Operation {
   REGEX_MATCH = "regex_match",
 }
 
+export const WatcherRuleZod = z.object({
+  id: z.string(),
+  selector: z.string("Selector is required").nonempty(),
+  operation: z.enum(Operation),
+  not: z.boolean().optional(),
+  value: z.string().optional(),
+  logicOperator: z.enum(["and", "or"]).optional(),
+});
+
+export type WatcherRule = z.infer<typeof WatcherRuleZod>;
+
 export const AddWatcherFormSchema = z.object({
   name: z.string("Please enter a name for the watcher").nonempty("Name is required"),
   url: z.url("Please enter a valid URL"),
   frequency: z.enum(Frequency),
-  rules: z.array(
-    z.object({
-      selector: z.string("Selector is required").nonempty(),
-      operation: z.enum(Operation),
-      value: z.string().optional(),
-      logicOperator: z.enum(["and", "or"]).optional(),
-    })
-  ),
+  rules: z.array(WatcherRuleZod),
 });
 
 export type WatcherFormData = z.infer<typeof AddWatcherFormSchema>;

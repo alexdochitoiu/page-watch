@@ -2,12 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import {
-  AddWatcherFormSchema,
-  checkFrequencyOptions,
-  Frequency,
-  WatcherFormData,
-} from "@/components/shared/add-watcher-form/AddWatcherForm.types";
+import { RulesBuilder } from "@/components/shared/rules-builder/RulesBuilder";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,9 +13,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/lib/supabase/client";
 import { useAuthStore } from "@/stores/auth";
+import {
+  AddWatcherFormSchema,
+  checkFrequencyOptions,
+  Frequency,
+  WatcherFormData,
+} from "@/types/watcher";
 
 export const AddWatcherForm: React.FC = () => {
   const { user } = useAuthStore();
@@ -33,6 +33,8 @@ export const AddWatcherForm: React.FC = () => {
     resolver: zodResolver(AddWatcherFormSchema),
     mode: "onBlur",
   });
+
+  console.log({ errors });
 
   const onSubmit = async (data: WatcherFormData) => {
     console.log("Watcher data", data);
@@ -98,16 +100,12 @@ export const AddWatcherForm: React.FC = () => {
         )}
       />
 
-      {/* TODO: Create custom RulesBuilder component */}
-      <div className="space-y-2">
-        <Label htmlFor="rules">Monitoring rules</Label>
-        <Textarea
-          id="rules"
-          {...register("rules")}
-          placeholder='Example: [{"selector": ".price", "operation": "greater_than", "value": "100"}]'
-        />
-        {errors.rules && <p className="text-sm text-red-500">{errors.rules.message}</p>}
-      </div>
+      <Controller
+        name="rules"
+        control={control}
+        defaultValue={[]}
+        render={({ field }) => <RulesBuilder rules={field.value} onChange={field.onChange} />}
+      />
 
       <Button type="submit" disabled={isSubmitting}>
         {isSubmitting ? "Adding..." : "Add watcher"}

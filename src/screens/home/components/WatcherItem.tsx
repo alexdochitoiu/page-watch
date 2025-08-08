@@ -65,8 +65,8 @@ export const WatcherItem: React.FC<WatcherItemProps> = ({ watcher }) => {
     <div key={watcher.id} className="border rounded-lg p-4 space-y-3">
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-foreground truncate">{watcher.url}</p>
-          <p className="text-sm text-muted-foreground">{watcher.email}</p>
+          <p className="font-medium text-foreground">{watcher.name}</p>
+          <p className="text-sm text-muted-foreground truncate">{watcher.url}</p>
         </div>
         <div className="flex items-center gap-2">
           <Switch
@@ -122,9 +122,9 @@ export const WatcherItem: React.FC<WatcherItemProps> = ({ watcher }) => {
         <Badge className={getStatusColor(watcher.status)}>{watcher.status}</Badge>
       </div>
 
-      {watcher.selector && (
-        <p className="text-xs text-muted-foreground">Selector: {watcher.selector}</p>
-      )}
+      {/*{watcher.selector && (*/}
+      {/*  <p className="text-xs text-muted-foreground">Selector: {watcher.selector}</p>*/}
+      {/*)}*/}
 
       <div className="text-xs text-muted-foreground">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
