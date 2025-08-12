@@ -34,8 +34,6 @@ export const AddWatcherForm: React.FC = () => {
     mode: "onBlur",
   });
 
-  console.log({ errors });
-
   const onSubmit = async (data: WatcherFormData) => {
     console.log("Watcher data", data);
     try {
@@ -49,7 +47,7 @@ export const AddWatcherForm: React.FC = () => {
         name: data.name,
         url: data.url,
         frequency: data.frequency.toLowerCase(),
-        selector: data.rules,
+        rules: data.rules,
       });
 
       if (error) {

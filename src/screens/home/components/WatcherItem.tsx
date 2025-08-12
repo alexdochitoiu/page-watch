@@ -22,7 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
-import { formatDate } from "@/lib/utils";
+import { formatDate, isWatcherRules } from "@/lib/utils";
 import { getFrequencyLabel, getStatusColor } from "@/screens/home/utils";
 import { deleteWatcher, updateWatcherStatus } from "@/screens/home/watcher.actions";
 import { Watcher } from "@/types";
@@ -122,9 +122,27 @@ export const WatcherItem: React.FC<WatcherItemProps> = ({ watcher }) => {
         <Badge className={getStatusColor(watcher.status)}>{watcher.status}</Badge>
       </div>
 
-      {/*{watcher.selector && (*/}
-      {/*  <p className="text-xs text-muted-foreground">Selector: {watcher.selector}</p>*/}
-      {/*)}*/}
+      {isWatcherRules(watcher.rules) && watcher.rules.length > 0 && (
+        <div className="mt-2 space-y-2">
+          <p className="text-xs font-semibold text-muted-foreground">Rules:</p>
+          <div className="grid gap-2">
+            {watcher.rules.map(rule => (
+              <div
+                key={rule.id}
+                className="flex flex-wrap items-center gap-2 p-2 rounded bg-muted/40"
+              >
+                <Badge variant="secondary">Selector: {rule.selector}</Badge>
+                <Badge variant="outline">Operation: {rule.operation}</Badge>
+                {rule.not && <Badge variant="destructive">NOT</Badge>}
+                {rule.value && <Badge variant="default">Value: {rule.value}</Badge>}
+                {rule.logicOperator && (
+                  <Badge variant="outline">Logic: {rule.logicOperator.toUpperCase()}</Badge>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="text-xs text-muted-foreground">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
