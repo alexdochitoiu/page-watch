@@ -1,7 +1,7 @@
 "use client";
 
-import { Edit, MoreVertical, RefreshCw, Trash2 } from "lucide-react";
-import { useTransition } from "react";
+import { Edit, MoreVertical, RefreshCw, Trash2, Eye, EyeOff } from "lucide-react";
+import { useTransition, useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +25,9 @@ import { Switch } from "@/components/ui/switch";
 import { formatDate, isWatcherRules } from "@/lib/utils";
 import { getFrequencyLabel, getStatusColor } from "@/screens/home/utils";
 import { deleteWatcher, updateWatcherStatus } from "@/screens/home/watcher.actions";
+import { RulesDisplay } from "@/components/shared/rules-display/RulesDisplay";
+import { useWatcherCheck } from "@/hooks/useWatcherCheck";
+import { WatcherRule } from "@/types/watcher";
 import { Watcher } from "@/types";
 
 interface WatcherItemProps {
@@ -33,6 +36,8 @@ interface WatcherItemProps {
 
 export const WatcherItem: React.FC<WatcherItemProps> = ({ watcher }) => {
   const [isPending, startTransition] = useTransition();
+  const [showRules, setShowRules] = useState(false);
+  const { isChecking, lastResult, checkWatcher } = useWatcherCheck();
 
   const handleStatusChange = async (active: boolean) => {
     if (isPending) return;
@@ -61,6 +66,17 @@ export const WatcherItem: React.FC<WatcherItemProps> = ({ watcher }) => {
     }
   };
 
+  const handleCheckNow = async () => {
+    if (isChecking || !isWatcherRules(watcher.rules)) return;
+
+    try {
+      await checkWatcher(watcher.url, watcher.rules as WatcherRule[]);
+      setShowRules(true); // Expand rules to show results
+    } catch (error) {
+      console.error("Error checking watcher:", error);
+    }
+  };
+
   return (
     <div key={watcher.id} className="border rounded-lg p-4 space-y-3">
       <div className="flex items-start justify-between">
@@ -81,9 +97,9 @@ export const WatcherItem: React.FC<WatcherItemProps> = ({ watcher }) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => {}}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Check Now
+              <DropdownMenuItem onClick={handleCheckNow} disabled={isChecking}>
+                <RefreshCw className={`h-4 w-4 mr-2 ${isChecking ? 'animate-spin' : ''}`} />
+                {isChecking ? 'Checking...' : 'Check Now'}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {}}>
                 <Edit className="h-4 w-4 mr-2" />
@@ -117,30 +133,42 @@ export const WatcherItem: React.FC<WatcherItemProps> = ({ watcher }) => {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 items-center">
         <Badge variant="outline">{getFrequencyLabel(watcher.frequency)}</Badge>
         <Badge className={getStatusColor(watcher.status)}>{watcher.status}</Badge>
+        {lastResult && (
+          <Badge variant={lastResult.success ? "default" : "destructive"} className="flex items-center gap-1">
+            {lastResult.success ? "✓" : "✗"} Last check: {lastResult.success ? "Passed" : "Failed"}
+          </Badge>
+        )}
       </div>
 
       {isWatcherRules(watcher.rules) && watcher.rules.length > 0 && (
-        <div className="mt-2 space-y-2">
-          <p className="text-xs font-semibold text-muted-foreground">Rules:</p>
-          <div className="grid gap-2">
-            {watcher.rules.map(rule => (
-              <div
-                key={rule.id}
-                className="flex flex-wrap items-center gap-2 p-2 rounded bg-muted/40"
-              >
-                <Badge variant="secondary">Selector: {rule.selector}</Badge>
-                <Badge variant="outline">Operation: {rule.operation}</Badge>
-                {rule.not && <Badge variant="destructive">NOT</Badge>}
-                {rule.value && <Badge variant="default">Value: {rule.value}</Badge>}
-                {rule.logicOperator && (
-                  <Badge variant="outline">Logic: {rule.logicOperator.toUpperCase()}</Badge>
-                )}
-              </div>
-            ))}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowRules(!showRules)}
+              className="h-auto p-1 text-xs"
+            >
+              {showRules ? <EyeOff className="h-3 w-3 mr-1" /> : <Eye className="h-3 w-3 mr-1" />}
+              {showRules ? 'Hide' : 'Show'} Rules ({watcher.rules.length})
+            </Button>
           </div>
+
+          {showRules ? (
+            <RulesDisplay
+              rules={watcher.rules as WatcherRule[]}
+              results={lastResult?.ruleResults}
+            />
+          ) : (
+            <RulesDisplay
+              rules={watcher.rules as WatcherRule[]}
+              results={lastResult?.ruleResults}
+              compact={true}
+            />
+          )}
         </div>
       )}
 
@@ -149,6 +177,9 @@ export const WatcherItem: React.FC<WatcherItemProps> = ({ watcher }) => {
           <span>Created: {formatDate(watcher.created_at)}</span>
           {watcher.last_checked_at && (
             <span>Last checked: {formatDate(watcher.last_checked_at)}</span>
+          )}
+          {lastResult && (
+            <span>Last test: {new Date(lastResult.timestamp).toLocaleString()}</span>
           )}
         </div>
       </div>
