@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { watcherEngine, WatcherCheckResult } from '@/lib/watcher/engine';
+
+// Optional: external watcher engine base URL. If set, proxy requests there instead of using local Playwright in this API route.
+const WATCHER_ENGINE_URL = process.env.WATCHER_ENGINE_URL;
 import { WatcherRuleZod } from '@/types/watcher';
 import { z } from 'zod';
 
@@ -42,9 +45,33 @@ export async function POST(request: NextRequest) {
     console.log('✅ [CHECK-NOW] Rules count:', rules.length);
     console.log('✅ [CHECK-NOW] Rules:', JSON.stringify(rules, null, 2));
 
-    // Check the watcher
+    // Check the watcher via external engine if configured, otherwise run locally
     console.log('🔍 [CHECK-NOW] Starting watcher engine check...');
-    const result: WatcherCheckResult = await watcherEngine.checkWatcher(url, rules);
+    let result: WatcherCheckResult;
+    if (WATCHER_ENGINE_URL) {
+      console.log(`🌐 [CHECK-NOW] Proxying to external engine: ${WATCHER_ENGINE_URL}`);
+      const resp = await fetch(`${WATCHER_ENGINE_URL.replace(/\/$/, '')}/check-now`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // We pass only what's needed by the engine; it may also accept watcherId later
+        body: JSON.stringify({ url, rules })
+      });
+      if (!resp.ok) {
+        const text = await resp.text();
+        throw new Error(`Engine error: ${resp.status} ${text}`);
+      }
+      const data = await resp.json();
+      // Normalize to WatcherCheckResult shape for the UI
+      result = {
+        success: !!data.success,
+        message: data.success ? 'All rules passed' : 'Some rules failed',
+        ruleResults: data.ruleResults ?? [],
+        screenshot: data.screenshotUrl ?? undefined,
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      result = await watcherEngine.checkWatcher(url, rules);
+    }
 
     const endTime = Date.now();
     const duration = endTime - startTime;

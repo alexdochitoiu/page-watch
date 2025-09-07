@@ -1,0 +1,10 @@
+services:
+  watcher-engine:
+    build:
+      context: ./services/watcher-engine
+    container_name: watcher-engine
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./services/watcher-engine/.env.local
+    restart: unless-stopped

@@ -72,6 +72,50 @@ export type Database = {
         };
         Relationships: [];
       };
+      watcher_runs: {
+        Row: {
+          id: string;
+          watcher_id: string | null;
+          url: string;
+          success: boolean;
+          rule_results: Json;
+          screenshot_url: string | null;
+          started_at: string;
+          finished_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          watcher_id?: string | null;
+          url: string;
+          success: boolean;
+          rule_results: Json;
+          screenshot_url?: string | null;
+          started_at?: string;
+          finished_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          watcher_id?: string | null;
+          url?: string;
+          success?: boolean;
+          rule_results?: Json;
+          screenshot_url?: string | null;
+          started_at?: string;
+          finished_at?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "watcher_runs_watcher_id_fkey";
+            columns: ["watcher_id"];
+            isOneToOne: false;
+            referencedRelation: "watchers";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
