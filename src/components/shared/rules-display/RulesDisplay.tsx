@@ -1,7 +1,7 @@
+import { CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { WatcherRule, Operation } from "@/types/watcher";
-import { CheckCircle, XCircle, AlertCircle } from "lucide-react";
 
 interface RulesDisplayProps {
   rules: WatcherRule[];
@@ -24,11 +24,7 @@ const operationLabels = {
   [Operation.REGEX_MATCH]: "matches regex",
 };
 
-export const RulesDisplay: React.FC<RulesDisplayProps> = ({
-  rules,
-  results,
-  compact = false
-}) => {
+export const RulesDisplay: React.FC<RulesDisplayProps> = ({ rules, results, compact = false }) => {
   const getResultForRule = (ruleId: string) => {
     return results?.find(result => result.ruleId === ruleId);
   };
@@ -36,9 +32,11 @@ export const RulesDisplay: React.FC<RulesDisplayProps> = ({
   const getResultIcon = (result: any) => {
     if (!result) return null;
     if (result.error) return <AlertCircle className="h-4 w-4 text-yellow-500" />;
-    return result.passed ?
-      <CheckCircle className="h-4 w-4 text-green-500" /> :
-      <XCircle className="h-4 w-4 text-red-500" />;
+    return result.passed ? (
+      <CheckCircle className="h-4 w-4 text-green-500" />
+    ) : (
+      <XCircle className="h-4 w-4 text-red-500" />
+    );
   };
 
   const getResultColor = (result: any) => {
@@ -50,9 +48,7 @@ export const RulesDisplay: React.FC<RulesDisplayProps> = ({
   if (compact) {
     return (
       <div className="space-y-2">
-        <div className="text-sm font-medium text-muted-foreground">
-          Rules ({rules.length})
-        </div>
+        <div className="text-sm font-medium text-muted-foreground">Rules ({rules.length})</div>
         <div className="flex flex-wrap gap-1">
           {rules.map((rule, index) => {
             const result = getResultForRule(rule.id);
@@ -67,9 +63,7 @@ export const RulesDisplay: React.FC<RulesDisplayProps> = ({
                 {rule.selector} {operationLabels[rule.operation]}
                 {rule.value && ` "${rule.value}"`}
                 {index < rules.length - 1 && rule.logicOperator && (
-                  <span className="ml-1 font-bold">
-                    {rule.logicOperator.toUpperCase()}
-                  </span>
+                  <span className="ml-1 font-bold">{rule.logicOperator.toUpperCase()}</span>
                 )}
               </Badge>
             );
@@ -97,7 +91,13 @@ export const RulesDisplay: React.FC<RulesDisplayProps> = ({
                   {getResultIcon(result)}
                 </div>
                 <Badge variant={getResultColor(result)} className="text-xs">
-                  {result?.error ? "Error" : result?.passed ? "Passed" : result ? "Failed" : "Not tested"}
+                  {result?.error
+                    ? "Error"
+                    : result?.passed
+                      ? "Passed"
+                      : result
+                        ? "Failed"
+                        : "Not tested"}
                 </Badge>
               </div>
 
@@ -118,9 +118,7 @@ export const RulesDisplay: React.FC<RulesDisplayProps> = ({
 
               {result && (
                 <div className="text-xs text-muted-foreground space-y-1">
-                  {result.error && (
-                    <div className="text-red-600">Error: {result.error}</div>
-                  )}
+                  {result.error && <div className="text-red-600">Error: {result.error}</div>}
                   {result.actualValue && (
                     <div>
                       <span className="font-medium">Actual:</span> {result.actualValue}

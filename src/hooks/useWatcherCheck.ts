@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { WatcherRule } from '@/types/watcher';
+import { useState } from "react";
+import { WatcherRule } from "@/types/watcher";
 
 interface CheckResult {
   success: boolean;
@@ -22,33 +22,33 @@ export const useWatcherCheck = () => {
   const checkWatcher = async (url: string, rules: WatcherRule[]) => {
     setIsChecking(true);
     try {
-      const response = await fetch('/api/watcher/check-now', {
-        method: 'POST',
+      const response = await fetch("/api/watcher/check-now", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ url, rules }),
       });
 
       const data = await response.json();
 
-      console.log('Watcher check response:', data);
+      console.log("Watcher check response:", data);
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to check watcher');
+        throw new Error(data.error || "Failed to check watcher");
       }
 
       if (data.success) {
         setLastResult(data.data);
         return data.data;
       } else {
-        throw new Error(data.error || 'Check failed');
+        throw new Error(data.error || "Check failed");
       }
     } catch (error) {
-      console.error('Error checking watcher:', error);
+      console.error("Error checking watcher:", error);
       const errorResult: CheckResult = {
         success: false,
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: error instanceof Error ? error.message : "Unknown error",
         ruleResults: [],
         timestamp: new Date().toISOString(),
       };

@@ -2,6 +2,7 @@
 
 import { Edit, MoreVertical, RefreshCw, Trash2, Eye, EyeOff } from "lucide-react";
 import { useTransition, useState } from "react";
+import { RulesDisplay } from "@/components/shared/rules-display/RulesDisplay";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,13 +23,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
+import { useWatcherCheck } from "@/hooks/useWatcherCheck";
 import { formatDate, isWatcherRules } from "@/lib/utils";
 import { getFrequencyLabel, getStatusColor } from "@/screens/home/utils";
 import { deleteWatcher, updateWatcherStatus } from "@/screens/home/watcher.actions";
-import { RulesDisplay } from "@/components/shared/rules-display/RulesDisplay";
-import { useWatcherCheck } from "@/hooks/useWatcherCheck";
-import { WatcherRule } from "@/types/watcher";
 import { Watcher } from "@/types";
+import { WatcherRule } from "@/types/watcher";
 
 interface WatcherItemProps {
   watcher: Watcher;
@@ -98,8 +98,8 @@ export const WatcherItem: React.FC<WatcherItemProps> = ({ watcher }) => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={handleCheckNow} disabled={isChecking}>
-                <RefreshCw className={`h-4 w-4 mr-2 ${isChecking ? 'animate-spin' : ''}`} />
-                {isChecking ? 'Checking...' : 'Check Now'}
+                <RefreshCw className={`h-4 w-4 mr-2 ${isChecking ? "animate-spin" : ""}`} />
+                {isChecking ? "Checking..." : "Check Now"}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {}}>
                 <Edit className="h-4 w-4 mr-2" />
@@ -137,7 +137,10 @@ export const WatcherItem: React.FC<WatcherItemProps> = ({ watcher }) => {
         <Badge variant="outline">{getFrequencyLabel(watcher.frequency)}</Badge>
         <Badge className={getStatusColor(watcher.status)}>{watcher.status}</Badge>
         {lastResult && (
-          <Badge variant={lastResult.success ? "default" : "destructive"} className="flex items-center gap-1">
+          <Badge
+            variant={lastResult.success ? "default" : "destructive"}
+            className="flex items-center gap-1"
+          >
             {lastResult.success ? "✓" : "✗"} Last check: {lastResult.success ? "Passed" : "Failed"}
           </Badge>
         )}
@@ -153,7 +156,7 @@ export const WatcherItem: React.FC<WatcherItemProps> = ({ watcher }) => {
               className="h-auto p-1 text-xs"
             >
               {showRules ? <EyeOff className="h-3 w-3 mr-1" /> : <Eye className="h-3 w-3 mr-1" />}
-              {showRules ? 'Hide' : 'Show'} Rules ({watcher.rules.length})
+              {showRules ? "Hide" : "Show"} Rules ({watcher.rules.length})
             </Button>
           </div>
 
@@ -178,9 +181,7 @@ export const WatcherItem: React.FC<WatcherItemProps> = ({ watcher }) => {
           {watcher.last_checked_at && (
             <span>Last checked: {formatDate(watcher.last_checked_at)}</span>
           )}
-          {lastResult && (
-            <span>Last test: {new Date(lastResult.timestamp).toLocaleString()}</span>
-          )}
+          {lastResult && <span>Last test: {new Date(lastResult.timestamp).toLocaleString()}</span>}
         </div>
       </div>
     </div>

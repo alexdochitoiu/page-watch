@@ -113,7 +113,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "watchers";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
     };

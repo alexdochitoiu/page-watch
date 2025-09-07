@@ -1,43 +1,83 @@
 import express from "express";
-import pino from "pino";
 import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
 
-const log = pino({ level: process.env.LOG_LEVEL || "info" });
 const app = express();
 app.use(express.json({ limit: "1mb" }));
-
-console.log({ env: process.env });
 
 const {
   SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY,
   SCREENSHOTS_BUCKET = "screenshots",
-  PORT = 8080
+  PORT = 8080,
 } = process.env;
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  log.warn("Supabase env vars missing: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY");
+  console.warn(
+    "Supabase env vars missing: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY"
+  );
 }
 
-const supabase = SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
-  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } })
-  : null;
+const supabase =
+  SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
+    ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+        auth: { persistSession: false },
+      })
+    : null;
 
-app.get("/healthz", (_, res) => res.send("ok"));
+if (!supabase) {
+  console.warn("Supabase client not initialized");
+}
+
+app.get("/healthz", async (_req, res) => {
+  const started = Date.now();
+  let supabaseStatus = "skipped";
+  let supabaseError = null;
+
+  if (supabase) {
+    try {
+      // Run a minimal query to verify DB connectivity and permissions
+      const { error } = await supabase.from("watcher_runs").select("id", { count: "exact", head: true }).limit(1);
+      if (error) {
+        supabaseStatus = "error";
+        supabaseError = { message: error.message, code: error.code };
+      } else {
+        supabaseStatus = "ok";
+      }
+    } catch (e) {
+      supabaseStatus = "error";
+      supabaseError = { message: e?.message || String(e) };
+    }
+  }
+
+  res.json({
+    status: "ok",
+    uptimeMs: Date.now() - started,
+    supabase: supabaseStatus,
+    supabaseError,
+    timestamp: new Date().toISOString(),
+  });
+});
 
 app.post("/check-now", async (req, res) => {
+  console.log(" -> Check-now request received", { body: req.body });
+
   const { watcherId, url, rules } = req.body || {};
-  if (!url || !Array.isArray(rules)) return res.status(400).json({ error: "Missing url or rules" });
+  if (!url || !Array.isArray(rules))
+    return res.status(400).json({ error: "Missing url or rules" });
 
   let browser;
   const startedAt = new Date().toISOString();
   try {
-    browser = await chromium.launch({ headless: true, args: ["--no-sandbox", "--disable-dev-shm-usage"] });
+    browser = await chromium.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-dev-shm-usage"],
+    });
     const context = await browser.newContext({
-      userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123 Safari/537.36",
+      userAgent:
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123 Safari/537.36",
       locale: "en-US",
-      viewport: { width: 1366, height: 900 }
+      viewport: { width: 1366, height: 900 },
     });
     const page = await context.newPage();
 
@@ -54,7 +94,7 @@ app.post("/check-now", async (req, res) => {
         navOk = true;
         break;
       } catch (e) {
-        log.warn({ err: e.message, strategy: s.waitUntil }, "nav_failed");
+        console.warn("nav_failed", { err: e.message, strategy: s.waitUntil });
       }
     }
     if (!navOk) throw new Error("Navigation failed");
@@ -122,21 +162,42 @@ app.post("/check-now", async (req, res) => {
       } catch (e) {
         error = e.message || String(e);
       }
-      ruleResults.push({ ruleId: rule.id, passed, actualValue, expectedValue: value, error });
+      ruleResults.push({
+        ruleId: rule.id,
+        passed,
+        actualValue,
+        expectedValue: value,
+        error,
+      });
     }
 
-    const success = ruleResults.every(r => r.passed);
+    const success = ruleResults.every((r) => r.passed);
     const screenshot = await page.screenshot({ type: "png", fullPage: true });
+
+    console.log("screenshot", { len: screenshot?.length });
+    if (!screenshot || screenshot.length === 0) {
+      console.warn("Screenshot capture failed");
+    }
 
     let screenshotUrl = null;
     if (supabase) {
+      console.log("Uploading screenshot to Supabase...");
       const path = `runs/${Date.now()}-${Math.random().toString(36).slice(2)}.png`;
-      const upload = await supabase.storage.from(SCREENSHOTS_BUCKET).upload(path, screenshot, {
-        contentType: "image/png",
-        upsert: false
-      });
+      const upload = await supabase.storage
+        .from(SCREENSHOTS_BUCKET)
+        .upload(path, screenshot, {
+          contentType: "image/png",
+          upsert: false,
+        });
+
+      if (upload.error) {
+        console.warn("Screenshot upload failed", upload.error);
+      }
+
       if (!upload.error) {
-        const { data } = supabase.storage.from(SCREENSHOTS_BUCKET).getPublicUrl(path);
+        const { data } = supabase.storage
+          .from(SCREENSHOTS_BUCKET)
+          .getPublicUrl(path);
         screenshotUrl = data.publicUrl;
       }
 
@@ -147,17 +208,17 @@ app.post("/check-now", async (req, res) => {
         rule_results: ruleResults,
         screenshot_url: screenshotUrl,
         started_at: startedAt,
-        finished_at: new Date().toISOString()
+        finished_at: new Date().toISOString(),
       });
     }
 
     res.json({ success, ruleResults, screenshotUrl });
   } catch (err) {
-    log.error({ err }, "check_failed");
+    console.error("check_failed", err);
     res.status(502).json({ error: err.message });
   } finally {
     if (browser) await browser.close().catch(() => {});
   }
 });
 
-app.listen(PORT, () => log.info({ PORT }, "watcher_engine_up"));
+app.listen(PORT, () => console.log("watcher_engine_up", { PORT }));
